@@ -7,13 +7,21 @@ const config = require('./config.json');
 
 let users = {};
 
+function parseId(bot, message){
+    if (!message.from || !message.from.username){
+        bot.response(message, "BUG: Can't find your username");
+        return;
+    }
+
+    return message.from.username;
+}
+
 function getUser(bot, message){
     return co(function*(){
-        if (!message.from || !message.from.username){
-            bot.response(message, "BUG: Can't find your username");
+        const username = parseId(bot, message);
+        if (!username){
             return;
         }
-        const username = message.from.username;
 
         if (users[username]){
             return users[username];
@@ -37,14 +45,14 @@ function getUser(bot, message){
 
         return users[username];
     }).catch(e=>{
-        console.log(e);
+        console.log('commands/getUser', e);
         bot.response(message, 'Something is going wrong, sorry.');
     });
 }
 
-function saveUser(bot, id){
+function saveUser(bot, message){
     return co(function*(){
-        let user = yield getUser(bot, id);
+        let user = yield getUser(bot, message);
 
         let data = {
             telegram_id: user.telegram_id,
@@ -52,9 +60,9 @@ function saveUser(bot, id){
             garden: user.garden||{},
         };
 
-        yield DB().saveUser(id, data);
+        yield DB().saveUser(user.telegram_id, data);
     }).catch(e=>{
-        console.log(e);
+        console.log('commands/saveUser', e);
     });
 }
 
@@ -155,11 +163,11 @@ const Commands = {
                 user.api = api;
                 user.token = token;
 
-                yield saveUser(bot, user.telegram_id);
+                yield saveUser(bot, message);
 
                 bot.response(message, 'Hooray!');
             }).catch(e=>{
-                console.log(e);
+                console.log('commands/login', e);
             });
         },
     },
@@ -182,12 +190,12 @@ const Commands = {
                 delete user.token;
                 delete user.garden;
 
-                yield saveUser(bot, user.telegram_id);
+                yield saveUser(bot, message);
 
                 delete users[user.telegram_id];
                 bot.response(message, 'Your Flower Power has been successfully removed.');
             }).catch(e=>{
-                console.log(e);
+                console.log('commands/remove', e);
             });
         },
     },
@@ -254,8 +262,18 @@ const Commands = {
                     if (image){
                         let res;
                         try {
-                            res = yield request.head(image);
-                        } catch(e){}
+                            res = yield new Promise((resolve, reject)=>{
+                                request.head(image, (err, res)=>{
+                                    if (err){
+                                        return reject(err);
+                                    }
+
+                                    resolve(res);
+                                });
+                            });
+                        } catch(e){
+                            console.log('info 1', e);
+                        }
 
                         if (!res){
                             return sendPlantInfo(plant);
@@ -269,7 +287,9 @@ const Commands = {
                                 stream: request(image),
                                 filename: 'plant.jpg',
                             });
-                        } catch(e){}
+                        } catch(e){
+                            console.log('info 2', e);
+                        }
                     }
                     sendPlantInfo(plant);
                 }
@@ -281,7 +301,7 @@ const Commands = {
                     bot.response(message, 'There is no plants found in your garden!');
                 }
             }).catch(e=>{
-                console.log(e);
+                console.log('commands/info', e);
                 bot.response(message, 'Something is going wrong, sorry.');
             });
         },

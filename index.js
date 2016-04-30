@@ -66,17 +66,43 @@ class Handler {
     response(message, text, cb){
         let options = this.getOptions(message);
         options.text = text;
-        return this.bot.sendMessage(options, cb);
+
+        return new Promise((resolve, reject)=>{
+            this.bot.sendMessage(options, (err, res)=>{
+                if (err){
+                    return reject(err);
+                }
+
+                resolve(res);
+            });
+        });
     }
 
     sendPhoto(message, data, cb){
         let options = this.getOptions(message);
         options.files = data;
-        return this.bot.sendPhoto(options, cb);
+
+        return new Promise((resolve, reject)=>{
+            this.bot.sendPhoto(options, (err, res)=>{
+                if (err){
+                    return reject(err);
+                }
+
+                resolve(res);
+            });
+        });
     }
 
     sendMessage(chat_id, text, cb){
-        return this.bot.sendMessage({chat_id: chat_id, text: text}, cb);
+        return new Promise((resolve, reject)=>{
+            this.bot.sendMessage({chat_id: chat_id, text: text}, (err, res)=>{
+                if (err){
+                    return reject(err);
+                }
+
+                resolve(res);
+            });
+        });
     }
 }
 

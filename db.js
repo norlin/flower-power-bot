@@ -76,15 +76,19 @@ class DB {
             if (!_this.users){
                 throw new Error('No this.users found!');
             }
+
+            let user;
+
             try {
-                let user = yield _this.users.findOne(query);
-                Object.assign(user, data);
-                yield _this.users.updateOne(query, user);
+                user = yield _this.users.findOne(query);
             } catch(e){
-                console.log('saveUser', e);
+                data.telegram_id = id;
+                user = yield _this.users.insertOne(data);
+                return user;
             }
-            data.telegram_id = id;
-            yield _this.users.insertOne(data);
+
+            Object.assign(user, data);
+            yield _this.users.updateOne(query, user);
         });
     }
 }
