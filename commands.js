@@ -33,6 +33,9 @@ function getUser(bot, message){
             user = yield DB().saveUser(username, {garden:{}});
         }
         users[username] = user;
+        if (!user.garden){
+            user.garden = {};
+        }
 
         if (user.token){
             let api = new FlowerPowerApi();
@@ -45,7 +48,7 @@ function getUser(bot, message){
 
         return users[username];
     }).catch(e=>{
-        console.log('commands/getUser', e);
+        console.log('commands/getUser', e, message);
         bot.response(message, 'Something is going wrong, sorry.');
     });
 }
@@ -62,7 +65,7 @@ function saveUser(bot, message){
 
         yield DB().saveUser(user.telegram_id, data);
     }).catch(e=>{
-        console.log('commands/saveUser', e);
+        console.log('commands/saveUser', e, message);
     });
 }
 
@@ -71,7 +74,11 @@ const Commands = {
         hidden: true,
         desc: 'Command not found',
         func: function(message){
-            this.response(message, "I don't understand you... :(", ()=>this.execute('help', message));
+            const bot = this;
+            co(function*(){
+                yield bot.response(message, "I don't understand you... :(");
+                return bot.execute('help', message);
+            });
         }
     },
     'shutdown': {
@@ -101,7 +108,7 @@ const Commands = {
             this.response(message, text.join('\n'));
         }
     },
-    'start': {alias: 'login'},
+    'start': {alias: 'help'},
     'login': {
         desc: 'Register your Flower Power account with bot: `/login username password`',
         func: function(message){
@@ -251,7 +258,7 @@ const Commands = {
                     if (plant_name && plant.plant_nickname != plant_name)
                         continue;
 
-                    found = true;
+                    found = plant.location_identifier;
 
                     const image = plant.images && plant.images[0] && plant.images[0].url;
 
@@ -271,9 +278,7 @@ const Commands = {
                                     resolve(res);
                                 });
                             });
-                        } catch(e){
-                            console.log('info 1', e);
-                        }
+                        } catch(e){}
 
                         if (!res){
                             return sendPlantInfo(plant);
@@ -287,9 +292,7 @@ const Commands = {
                                 stream: request(image),
                                 filename: 'plant.jpg',
                             });
-                        } catch(e){
-                            console.log('info 2', e);
-                        }
+                        } catch(e){}
                     }
                     sendPlantInfo(plant);
                 }
@@ -299,7 +302,30 @@ const Commands = {
                         return;
                     }
                     bot.response(message, 'There is no plants found in your garden!');
+                    return;
                 }
+
+                return;
+
+                if (!plant_name){
+                    return;
+                }
+
+                const stats = yield new Promise((resolve, reject)=>{
+                    api.getStatistics({
+                        url: {location_identifier: found},
+                        from_datetime_utc: (new Date()).toISOString(),
+                        include_acknowledged: true,
+                    }, (err, data)=>{
+                        if (err){
+                            return reject(err);
+                        }
+
+                        resolve(data);
+                    });
+                });
+
+                console.log(stats);
             }).catch(e=>{
                 console.log('commands/info', e);
                 bot.response(message, 'Something is going wrong, sorry.');

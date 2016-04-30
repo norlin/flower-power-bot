@@ -62,10 +62,12 @@ class DB {
             try {
                 user = yield _this.users.findOne({telegram_id: id});
             } catch(e){
-                console.log('getUser', e);
+                console.log('db/getUser 1', e);
             }
 
             return user;
+        }).catch(e=>{
+            console.log('db/getUser 22', e);
         });
     }
 
@@ -81,7 +83,9 @@ class DB {
 
             try {
                 user = yield _this.users.findOne(query);
-            } catch(e){
+            } catch(e){}
+
+            if (!user){
                 data.telegram_id = id;
                 user = yield _this.users.insertOne(data);
                 return user;
@@ -89,6 +93,8 @@ class DB {
 
             Object.assign(user, data);
             yield _this.users.updateOne(query, user);
+        }).catch(e=>{
+            console.log('db/saveUser', e);
         });
     }
 }

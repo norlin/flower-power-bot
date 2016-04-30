@@ -63,7 +63,7 @@ class Handler {
         return true;
     }
 
-    response(message, text, cb){
+    response(message, text){
         let options = this.getOptions(message);
         options.text = text;
 
@@ -78,7 +78,7 @@ class Handler {
         });
     }
 
-    sendPhoto(message, data, cb){
+    sendPhoto(message, data){
         let options = this.getOptions(message);
         options.files = data;
 
@@ -93,7 +93,7 @@ class Handler {
         });
     }
 
-    sendMessage(chat_id, text, cb){
+    sendMessage(chat_id, text){
         return new Promise((resolve, reject)=>{
             this.bot.sendMessage({chat_id: chat_id, text: text}, (err, res)=>{
                 if (err){
