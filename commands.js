@@ -165,7 +165,7 @@ const Commands = {
 
                 yield saveUser(bot, message);
 
-                bot.response(message, 'Hooray!');
+                bot.response(message, 'Hooray!\n Now you can check your plants with /info command.');
             }).catch(e=>{
                 console.log('commands/login', e);
             });
