@@ -1,0 +1,33 @@
+{
+  "name": "flower-power-bot",
+  "version": "0.0.1",
+  "description": "Telegram Bot for Flower Power device",
+  "main": "index.js",
+  "keywords": [
+    "flower power",
+    "flower power bot",
+    "bot",
+    "telegram",
+    "telegram bot"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/norlin/flower-power-bot.git"
+  },
+  "author": [
+    "Alexey Makarov <myxaxaxa@gmail.com> (https://norlin.guru)"
+  ],
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/norlin/flower-power-bot/issues"
+  },
+  "homepage": "https://github.com/norlin/flower-power-bot",
+  "dependencies": {
+    "node-telegram-bot": "https://github.com/norlin/node-telegram-bot",
+    "flower-power-api": "^1.4.0",
+    "request": "^2.0.0"
+  },
+  "devDependencies": {
+
+  }
+}
