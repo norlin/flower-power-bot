@@ -4,6 +4,8 @@ const config = require('./config.json');
 const Stats = require('./stat');
 const Commands = require('./commands');
 
+const DB = require('./db');
+
 class Handler {
     constructor(bot){
         this.bot = bot;
@@ -31,8 +33,12 @@ class Handler {
         if (!command||!Commands[command]){
             command = '404';
         }
-        if (Commands[command].alias && Commands[command].alias!=command)
+        if (Commands[command].hidden && message.from.id!=config.author_id){
+            command = '404';
+        }
+        if (Commands[command].alias && Commands[command].alias!=command){
             return this.execute(Commands[command].alias, message);
+        }
         let text = message.text.split(/\s+/);
         text.splice(0, 1);
         message.text = text.join(' ');
@@ -42,6 +48,7 @@ class Handler {
     getOptions(message){
         let options = {
             chat_id: message.chat.id,
+            parse_mode: 'Markdown',
             //reply_to_message_id: message.message_id
         };
 
@@ -59,13 +66,17 @@ class Handler {
     response(message, text, cb){
         let options = this.getOptions(message);
         options.text = text;
-        this.bot.sendMessage(options, cb);
+        return this.bot.sendMessage(options, cb);
     }
 
     sendPhoto(message, data, cb){
         let options = this.getOptions(message);
         options.files = data;
-        this.bot.sendPhoto(options, cb);
+        return this.bot.sendPhoto(options, cb);
+    }
+
+    sendMessage(chat_id, text, cb){
+        return this.bot.sendMessage({chat_id: chat_id, text: text}, cb);
     }
 }
 
@@ -73,4 +84,6 @@ const bot = new Bot({
     token: config.token
 });
 const handler = new Handler(bot);
+
+DB(handler);
 console.log('Running...');

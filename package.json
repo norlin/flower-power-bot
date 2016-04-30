@@ -25,7 +25,9 @@
   "dependencies": {
     "node-telegram-bot": "https://github.com/norlin/node-telegram-bot",
     "flower-power-api": "^1.4.0",
-    "request": "^2.0.0"
+    "request": "^2.0.0",
+    "mongodb": "~2.0",
+    "co": "~4.0"
   },
   "devDependencies": {
 
